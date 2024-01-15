@@ -23,7 +23,7 @@ import subprocess
 class UblueImageSwitcherWindow(Adw.ApplicationWindow):
     __gtype_name__ = 'UblueImageSwitcherWindow'
 
-    rebase, spin, desktop, driver, hardware = [Gtk.Template.Child() for i in range(5)]
+    rebase, spin, desktop, driver, hardware = [Gtk.Template.Child() for _ in range(5)]
 
 
     def run_rebase(widget, operation, self):
@@ -34,25 +34,38 @@ class UblueImageSwitcherWindow(Adw.ApplicationWindow):
             "main-sway":     "sericea",
             "bazzite-kde":   "bazzite",
             "bluefin-gnome": "bluefin",
-            "bluefin-kde":   "error",
+            "bluefin-kde":   None,
         }
 
-        command_signing = "ostree-image-signed:docker://ghcr.io/ublue-os/" if True else "ostree-unverified-registry:ghcr.io/ublue-os/"
+        registry = "ghcr.io/ublue-os/"
 
-        spin     =                     self.spin.get_selected_item().get_string().lower()
-        desktop  = "-"               + self.desktop.get_selected_item().get_string().lower()
-        hardware = ""  if (hardware := self.hardware.get_selected_item().get_string().lower()) == "general"     else "-" + hardware
-        driver   = ""  if (driver   := self.driver.get_selected_item().get_string().lower())   == "open source" else "-" + driver
+        command_signing = "ostree-image-signed:docker://" if True else "ostree-unverified-registry:"
 
-        rebase = spin_desktop_lookup.get(spin + desktop, spin + desktop) + hardware + driver
+        spin     = self.spin.get_selected_item().get_string().lower()
+        desktop  = "-" + self.desktop.get_selected_item().get_string().lower()
+        hardware = "" if (hardware := self.hardware.get_selected_item().get_string().lower()) == "general"     else "-" + hardware
+        driver   = "" if (driver   := self.driver.get_selected_item().get_string().lower())   == "open source" else "-" + driver
+
+        spin = spin_desktop_lookup.get(spin + desktop, spin + desktop)
+
+        if spin == None:
+            print("Image does not exist, please try other options.")
+            return
+
+        rebase = f"{spin}{hardware}{driver}"
+
         if "-" not in rebase:
             rebase = rebase + "-main"
 
-        if "error" in rebase:
-            print("Image does not exist, please try other options.")
-        else:
-            rebase_command = f"rpm-ostree rebase {command_signing}{rebase}:latest"
-            subprocess.run(f"flatpak-spawn --host {rebase_command}", shell=True)
+        
+        rebase_command = f"rpm-ostree rebase {command_signing}{registry}{rebase}:latest".split(" ")
+        try:
+            subprocess.run(["flatpak-spawn","--host"] + rebase_command)
+        except (OSError, FileNotFoundError):
+            try:
+                subprocess.run(rebase_command)
+            except FileNotFoundError:
+               print("Failed to run rebase command. Verify your PATH variable.") 
 
 
     def __init__(self, **kwargs):
