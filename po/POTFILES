@@ -1,0 +1,6 @@
+data/org.ublue.ImageSwitcher.desktop.in
+data/org.ublue.ImageSwitcher.metainfo.xml.in
+data/org.ublue.ImageSwitcher.gschema.xml
+src/main.py
+src/window.py
+src/window.ui

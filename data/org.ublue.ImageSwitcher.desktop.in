@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=ublue-image-switcher
+Exec=ublue-image-switcher
+Icon=org.ublue.ImageSwitcher
+Terminal=false
+Type=Application
+Categories=GTK;
+StartupNotify=true

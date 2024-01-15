@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="ublue-image-switcher">
+	<schema id="org.ublue.ImageSwitcher" path="/org/ublue/ImageSwitcher/">
+	</schema>
+</schemalist>
